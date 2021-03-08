@@ -23,7 +23,7 @@ private[client] trait Creatable[F[_], Resource <: { def metadata: Option[ObjectM
   def create(resource: Resource): F[Status] =
     httpClient
       .run(
-        Request[F](POST, config.server.resolve(resourceUri))
+        Request[F](POST, config.server.addPath(resourceUri.path))
           .withEntity(resource)
           .putHeaders(config.authorization.toSeq: _*)
       )
@@ -32,7 +32,7 @@ private[client] trait Creatable[F[_], Resource <: { def metadata: Option[ObjectM
       )
 
   def createOrUpdate(resource: Resource): F[Status] = {
-    val fullResourceUri = config.server.resolve(resourceUri) / resource.metadata.get.name.get
+    val fullResourceUri = config.server.addPath(resourceUri.path) / resource.metadata.get.name.get
     def update =
       httpClient
         .run(
